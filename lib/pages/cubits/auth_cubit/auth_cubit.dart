@@ -1,14 +1,44 @@
-import 'package:bloc/bloc.dart';
-import 'package:blocproject/pages/cubits/register_cubit/register_state.dart';
+import 'package:blocproject/pages/cubits/auth_cubit/auth_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class RegisterCubit extends Cubit<RegisterState> {
-  RegisterCubit() : super(RegisterInitial());
-  String? email, password;
+class AuthCubit extends Cubit<AuthState> {
+  AuthCubit() : super(AuthInitial());
   bool isLoading = false;
-  GlobalKey<FormState> formKey = GlobalKey();
+  GlobalKey<FormState> formKeyLogin = GlobalKey();
+  GlobalKey<FormState> formKeyRegister = GlobalKey();
+
+  String? email, password;
+
+  Future<void> loginUser(
+      {required String email, required String password}) async {
+    emit(LoginLoading());
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (userCredential.user != null) {
+        emit(LoginSuccess());
+      } else {
+        emit(LoginFailure(error: 'Failed to sign in'));
+      }
+    } on FirebaseAuthException catch (ex) {
+      if (ex.code == 'user-not-found') {
+        emit(LoginFailure(error: 'User not found'));
+      } else if (ex.code == 'wrong-password') {
+        emit(LoginFailure(error: 'Wrong password'));
+      } else {
+        emit(LoginFailure(error: 'Something went wrong'));
+      }
+    } catch (e) {
+      emit(LoginFailure(error: 'Something went wrong'));
+    }
+  }
 
   Future<void> registerUser(
       {required String email, required String password}) async {
@@ -51,5 +81,17 @@ class RegisterCubit extends Cubit<RegisterState> {
     } catch (e) {
       emit(RegisterFailure(error: 'there was an error'));
     }
+  }
+
+  IconData suffix = Icons.visibility_outlined;
+  bool isPasswordShow = true;
+
+  void changePasswordVisibility() {
+    isPasswordShow = !isPasswordShow;
+
+    suffix = isPasswordShow
+        ? Icons.visibility_outlined
+        : Icons.visibility_off_outlined;
+    emit(ChangePaswordVisibilityState());
   }
 }

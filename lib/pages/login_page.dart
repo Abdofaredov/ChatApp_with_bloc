@@ -1,8 +1,8 @@
 import 'package:blocproject/constants.dart';
 import 'package:blocproject/helper/show_snack_bar.dart';
+import 'package:blocproject/pages/cubits/auth_cubit/auth_cubit.dart';
+import 'package:blocproject/pages/cubits/auth_cubit/auth_state.dart';
 import 'package:blocproject/pages/cubits/chat_cubit/chat_cubit.dart';
-import 'package:blocproject/pages/cubits/login_cubit/login_cubit.dart';
-import 'package:blocproject/pages/cubits/login_cubit/login_state.dart';
 import 'package:blocproject/pages/resgister_page.dart';
 import 'package:blocproject/widgets/custom_button.dart';
 import 'package:blocproject/widgets/custom_text_field.dart';
@@ -19,9 +19,9 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var cubit = BlocProvider.of<LoginCubit>(context);
+    var cubit = BlocProvider.of<AuthCubit>(context);
 
-    return BlocConsumer<LoginCubit, LoginState>(
+    return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is LoginLoading) {
           cubit.isLoading = true;
@@ -42,7 +42,7 @@ class LoginPage extends StatelessWidget {
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Form(
-                key: cubit.formKey,
+                key: cubit.formKeyLogin,
                 child: ListView(
                   children: [
                     const SizedBox(
@@ -92,7 +92,12 @@ class LoginPage extends StatelessWidget {
                       height: 10,
                     ),
                     CustomFormTextField(
-                      obscureText: true,
+                      isPassword: cubit.isPasswordShow,
+                      suffix: cubit.suffix,
+                      suffixPressed: () {
+                        cubit.changePasswordVisibility();
+                        return null;
+                      },
                       onChanged: (data) {
                         cubit.password = data;
                       },
@@ -103,8 +108,8 @@ class LoginPage extends StatelessWidget {
                     ),
                     CustomButon(
                       onTap: () async {
-                        if (cubit.formKey.currentState!.validate()) {
-                          BlocProvider.of<LoginCubit>(context).loginUser(
+                        if (cubit.formKeyLogin.currentState!.validate()) {
+                          BlocProvider.of<AuthCubit>(context).loginUser(
                               email: cubit.email!, password: cubit.password!);
                         }
                       },

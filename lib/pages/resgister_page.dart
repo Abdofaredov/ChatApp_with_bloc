@@ -1,8 +1,8 @@
 import 'package:blocproject/constants.dart';
 import 'package:blocproject/helper/show_snack_bar.dart';
 import 'package:blocproject/pages/chat_page.dart';
-import 'package:blocproject/pages/cubits/register_cubit/register_cubit.dart';
-import 'package:blocproject/pages/cubits/register_cubit/register_state.dart';
+import 'package:blocproject/pages/cubits/auth_cubit/auth_cubit.dart';
+import 'package:blocproject/pages/cubits/auth_cubit/auth_state.dart';
 import 'package:blocproject/widgets/custom_button.dart';
 import 'package:blocproject/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
@@ -16,9 +16,9 @@ class RegisterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var cubit = BlocProvider.of<RegisterCubit>(context);
+    var cubit = BlocProvider.of<AuthCubit>(context);
 
-    return BlocConsumer<RegisterCubit, RegisterState>(
+    return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is RegisterLoading) {
           cubit.isLoading = true;
@@ -38,7 +38,7 @@ class RegisterPage extends StatelessWidget {
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Form(
-                key: cubit.formKey,
+                key: cubit.formKeyRegister,
                 child: ListView(
                   children: [
                     const SizedBox(
@@ -88,6 +88,12 @@ class RegisterPage extends StatelessWidget {
                       height: 10,
                     ),
                     CustomFormTextField(
+                      isPassword: cubit.isPasswordShow,
+                      suffix: cubit.suffix,
+                      suffixPressed: () {
+                        cubit.changePasswordVisibility();
+                        return null;
+                      },
                       onChanged: (data) {
                         cubit.password = data;
                       },
@@ -98,8 +104,8 @@ class RegisterPage extends StatelessWidget {
                     ),
                     CustomButon(
                       onTap: () async {
-                        if (cubit.formKey.currentState!.validate()) {
-                          BlocProvider.of<RegisterCubit>(context).registerUser(
+                        if (cubit.formKeyRegister.currentState!.validate()) {
+                          BlocProvider.of<AuthCubit>(context).registerUser(
                               email: cubit.email!, password: cubit.password!);
                         }
                       },
